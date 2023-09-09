@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <title>Document</title>
+</head>
+<body>
+    <div class="container">
+        <div class="jumbotron mb-0">
+            <h1 class="display-4">Novo Pedido</h1>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-body">
+                <form th:object="${requisicaoNovoPedido}" action="/pedido/novo" method="POST">
+                    <div class="mb-3 position-relative">
+                        <label for="nomeProduto" class="form-label">Produto</label>
+                        <input th:field="*{nomeProduto}" th:errorclass="is-invalid" class="form-control" placeholder="Nome do produto" required/>
+                        <small>Irforme o nome do produto.</small>
+                        <div th:errors="*{nomeProduto}" class="invalid-feedback">Erros do nome do produto</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="urlProduto" class="form-label">Url do Produto</label>
+                        <input th:field="*{urlProduto}" th:errorclass="is-invalid" class="form-control" placeholder="Url do produto" required/>
+                        <small>Procure um site para o produto que você deseja.</small>
+                        <div th:errors="*{urlProduto}" class="invalid-tooltip">Erros de url do produto</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="urlImagem" class="form-label">Url da Imagem</label>
+                        <input th:field="*{urlImagem}" th:errorclass="is-invalid" class="form-control" placeholder="Url da Imagem" required/>
+                        <small>Copie a url de uma boa imagem do produto e cole aquipara ajudar a conseguir compradores.</small>
+                        <div th:errors="*{urlImagem}" class="invalid-tooltip">Erros do url da imagem</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descricao" class="form-label">Descrição</label>
+                        <textarea th:field="*{descricao}" th:errorclass="is-invalid" class="form-control" placeholder="Descrição" ></textarea>
+                        <div th:errors="*{descricao}" class="invalid-tooltip">Erros da descrição</div>
+                    </div>
+                    <button class="btn btn-primary" type="submit">Cadastrar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+</body>
+</html>
