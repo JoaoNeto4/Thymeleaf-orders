@@ -12,7 +12,7 @@
 
 			<nav class="navbar mb-3">
 				
-                <form action="@{/login}" method="post" class="card-body">
+                <form th:action="@{/login}" method="post" role="form" class="card-body">
                     <div class="mb-3">
                         <label for="username">Login</label>
                         <input type="text" id="username" name="username" class="form-control" required/>
