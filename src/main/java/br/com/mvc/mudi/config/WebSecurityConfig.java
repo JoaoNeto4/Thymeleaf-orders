@@ -1,36 +1,21 @@
-package br.com.mvc.mudi;
+package br.com.mvc.mudi.config;
 
-import javax.sql.DataSource;
 
-import org.hibernate.validator.internal.util.stereotypes.Lazy;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;
+import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.userdetails.User.UserBuilder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.data.repository.query.SecurityEvaluationContextExtension;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import br.com.mvc.mudi.repository.UserRepository;
 
 
 @Configuration
@@ -128,7 +113,7 @@ public class WebSecurityConfig {
 
 
 
-
+    /*
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -189,7 +174,65 @@ public class WebSecurityConfig {
     public BCryptPasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
+    */
 
+
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http    
+                .authorizeHttpRequests(
+                        authorizeConfig -> {
+                            authorizeConfig.requestMatchers( HttpMethod.GET, "/login", "/logout").permitAll();
+                            authorizeConfig.requestMatchers(HttpMethod.GET, "/home").hasRole("USER");
+                            authorizeConfig.requestMatchers(HttpMethod.GET, "/users").hasAnyRole("DEVELOPER");
+                            authorizeConfig.anyRequest().authenticated();
+                        }
+                )
+                .formLogin(login -> {
+                    login.loginPage("/login");
+                    login.defaultSuccessUrl("/home");
+                    //login.failureUrl("/login-error");
+                    }
+                )
+                .logout(logout -> {
+                    logout.logoutRequestMatcher(new AntPathRequestMatcher("/logout"));
+                    logout.logoutSuccessUrl("/");
+                    logout.deleteCookies("JSESSIONID");
+                    logout.invalidateHttpSession(true);
+                });
+
+        return http.build();
+    }
+
+    @Bean
+	UserDetailsService myUserDetailsService(UserRepository userRepository) {
+		return new MyUserDetailsService(userRepository);
+	}
+	
+	@Bean
+	BCryptPasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+	
+	@Bean
+	SecurityEvaluationContextExtension securityEvaluationContextExtension() {
+		return new SecurityEvaluationContextExtension();
+	}
+	
+	@Bean
+	ApplicationListener<AuthenticationSuccessEvent> successEvent() {
+		return event -> {
+			System.out.println("Success Login " + event.getAuthentication().getClass().getSimpleName() + " - " + event.getAuthentication().getName());
+		};
+	}
+	
+	@Bean
+	ApplicationListener<AuthenticationFailureBadCredentialsEvent> failureEvent() {
+		return event -> {
+			System.err.println("Bad Credentials Login " + event.getAuthentication().getClass().getSimpleName() + " - " + event.getAuthentication().getName());
+		};
+	}
     
 
 
